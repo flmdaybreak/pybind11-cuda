@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-import gpu_library
+import pycumath
 import numpy as np
 import time
 
@@ -13,7 +13,7 @@ factor = 3.0
 
 t0 = time.time()
 for _ in range(runs):
-    gpu_library.multiply_with_scalar(arr1, factor)
+    pycumath.PycuMath.mul(arr1, factor)
 print("gpu time: {}".format(time.time()-t0))
 t0 = time.time()
 for _ in range(runs):

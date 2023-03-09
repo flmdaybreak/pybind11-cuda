@@ -56,8 +56,57 @@ include(protect_pthread_flag)
 #-------------------------------------------------------------------#
 # build some Cuda library
 #-------------------------------------------------------------------#
+find_package(Python REQUIRED COMPONENTS Development)
+include_directories(${Python_INCLUDE_DIRS})
+# add_subdirectory(src)
+set(PYPSI_BASEDIR pycumath)
+set(CUDA_SOURCES
+    ${PYPSI_BASEDIR}/cuda/gpu_library.cu
+    )
+set(CPP_SOURCES
+    ${PYPSI_BASEDIR}/cpp/test.cpp
+    )
 
-add_subdirectory(src)
+add_library(gpu_library SHARED
+  ${CUDA_SOURCES})
+
+# target_include_directories(gpu_library PUBLIC ${CMAKE_SOURCE_DIR}/pybind11/include)
+target_link_libraries(gpu_library PUBLIC
+  #${PYTHON3_PYTHON}
+  cudart)
+
+
+
+execute_process(COMMAND python3 -m pybind11 --cmakedir OUTPUT_VARIABLE PYBIND11_CMAKE_PATH OUTPUT_STRIP_TRAILING_WHITESPACE)
+find_package(pybind11 PATHS ${PYBIND11_CMAKE_PATH} REQUIRED)
+
+add_library(pycumath ${CPP_SOURCES})
+pybind11_add_module(_pycumath ${CPP_SOURCES} ${PYPSI_BASEDIR}/binding.cpp)
+
+target_link_libraries(pycumath PUBLIC
+  #${PYTHON3_PYTHON}
+  # Python3::Python
+  gpu_library
+  # gpu_library
+  )
+
+target_link_libraries(_pycumath PUBLIC
+  #${PYTHON3_PYTHON}
+  # Python3::Python
+  gpu_library
+  # gpu_library
+  )
+
+
+
+# target_compile_options(_gpu_library PRIVATE "$<$<COMPILE_LANGUAGE:CUDA>:-arch=sm_60>")
+
+# add_library(pypsi  ${SOURCES})
+# pybind11_add_module(_pypsi_cpp ${SOURCES} ${PYPSI_BASEDIR}/binding.cpp)
+
+# set what comes before the library name, here no "lib"
+set_target_properties(gpu_library PROPERTIES PREFIX "")
+# set_target_properties(_gpu_library PROPERTIES PREFIX "")
 
 #-------------------------------------------------------------------#
 # Configuration summary
